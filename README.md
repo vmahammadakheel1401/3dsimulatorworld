@@ -43,3 +43,49 @@ A modern, interactive 3D visualization and digital twin web application built to
 ├── index.html             # Main HTML entry point
 ├── index.css / styles.css # Styling and layout sheets
 └── vite.config.ts         # Vite build configuration
+
+📦 Getting Started Locally
+To run this project locally on your machine, follow these steps:
+
+Prerequisites
+Make sure you have Node.js or Bun installed.
+
+Installation
+Clone the repository:
+
+Bash
+git clone [https://github.com/vmahammadakheel1401/3dsimulatorworld.git](https://github.com/vmahammadakheel1401/3dsimulatorworld.git)
+Navigate into the project directory:
+
+Bash
+cd 3dsimulatorworld
+Install dependencies:
+
+Bash
+bun install
+# or using npm
+npm install
+Start the development server:
+
+Bash
+bun dev
+# or using npm
+npm run dev
+Open your browser and navigate to http://localhost:5173 (or the port specified in your terminal).
+
+🌐 Live Preview
+Explore the live application deployed on Vercel:
+
+👉 3dsimulatorworld.vercel.app
+
+🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+
+📝 License
+This project is open-source and available under the MIT License.
+
+
+---
+
+### Next Steps:
+If you want to add specific details about the specific librar

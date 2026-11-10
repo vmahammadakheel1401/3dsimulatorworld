@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>India 3D Digital Twin &amp; Heritage Explorer</title>
+  <meta name="description" content="Interactive 3D geospatial digital twin and heritage atlas of India. Explore 3D topographic terrain from the Himalayas to Kanyakumari, UNESCO monuments, archaeoastronomical solar alignments, LiDAR hillshades, and historical eras across all Indian regions." />
+  <meta property="og:title" content="India 3D Digital Twin &amp; Heritage Explorer" />
+  <meta property="og:description" content="Interactive 3D geospatial digital twin and heritage atlas of India. Explore 3D topographic terrain from the Himalayas to Kanyakumari, UNESCO monuments, archaeoastronomical solar alignments, LiDAR hillshades, and historical eras across all Indian regions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-mode="orbit" data-section="overview">
+  <!-- Top Scroll Progress Bar -->
+  <div id="scroll-progress-track" aria-hidden="true">
+    <div id="scroll-progress-fill"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" aria-label="Loading Subcontinent Digital Twin">
+    <div class="loader-card">
+      <div class="loader-emblem">
+        <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
+          <defs>
+            <radialGradient id="loader-dial-grad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#1b1508" stop-opacity="0.95" />
+              <stop offset="75%" stop-color="#120d05" stop-opacity="0.95" />
+              <stop offset="100%" stop-color="#0a0703" stop-opacity="0.98" />
+            </radialGradient>
+            <radialGradient id="loader-orb-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#fff6c2" stop-opacity="0.95" />
+              <stop offset="55%" stop-color="#f8d040" stop-opacity="0.48" />
+              <stop offset="100%" stop-color="#f8d040" stop-opacity="0.0" />
+            </radialGradient>
+          </defs>
+          <circle cx="60" cy="60" r="54" class="loader-outer-bezel" />
+          <circle cx="60" cy="60" r="51" fill="url(#loader-dial-grad)" class="loader-dial-plate" />
+          <line x1="60" y1="20" x2="60" y2="100" class="loader-axis-chord" />
+          <line x1="20" y1="60" x2="100" y2="60" class="loader-axis-chord" />
+          <circle cx="60" cy="60" r="35" class="loader-orbit-track" />
+          <!-- India / Chakra Motif -->
+          <circle cx="60" cy="60" r="14" fill="none" stroke="#f8d040" stroke-width="1.2" />
+          <g class="loader-sun-spinner">
+            <circle cx="60" cy="60" r="35" class="loader-active-arc" />
+            <circle cx="60" cy="25" r="7.5" fill="url(#loader-orb-glow)" />
+            <circle cx="60" cy="25" r="3.4" class="loader-orb-core" />
+          </g>
+        </svg>
+      </div>
+      <div class="progress-bar-track">
+        <div id="loading-progress-bar" class="progress-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FULL-SCREEN 3D VIEWPORT + EDITORIAL MONOGRAPH OVERLAYS                -->
+  <!-- ===================================================================== -->
+  <div id="app-shell">
+    <!-- 100vw x 100vh Full-Screen 3D Render Stage -->
+    <section id="viewport-stage" aria-label="Full-Screen 3D India Digital Twin Viewport">
+      <div id="canvas-container" aria-label="Interactive 3D India Subcontinent Digital Twin"></div>
+
+      <!-- Aspect Ratio Switcher (Auto, 16:9, 9:16) -->
+      <div id="aspect-ratio-bar" class="aspect-ratio-bar" role="group" aria-label="Aspect Ratio Frame Switcher">
+        <button type="button" class="aspect-btn active" data-aspect="auto" title="Auto-fit enclosing frame">Auto</button>
+        <button type="button" class="aspect-btn" data-aspect="16:9" title="16:9 Landscape Frame">16:9</button>
+        <button type="button" class="aspect-btn" data-aspect="9:16" title="9:16 Portrait Frame">9:16</button>
+      </div>
+
+      <!-- Live GPS Coordinates & Elevation HUD -->
+      <div id="live-coords-hud" class="live-coords-hud">
+        <span class="coord-accent">GPS:</span> <span id="hud-latlon">22.5000°N, 79.0000°E</span>
+        <span class="coord-accent">ELEV:</span> <span id="hud-elev">450m</span>
+        <span class="coord-accent">REGION:</span> <span id="hud-region">Central India</span>
+      </div>
+
+      <!-- Interactive Zoomed-Out Area HUD Overlay (Visible when zoomed out maximum) -->
+      <div id="max-zoomout-area-card" class="max-zoomout-card" aria-label="Current Planetary Region">
+        <div class="mzo-pill">
+          <span class="mzo-icon">🌍</span>
+          <span id="mzo-continent">PLANET EARTH • 195 COUNTRIES &amp; CONTINENTS</span>
+        </div>
+        <div class="mzo-quick-continents">
+          <button class="continent-jump-btn" data-center="20,15" data-zoom="2.2" title="Planetary Overview">🌐 Orbit</button>
+          <button class="continent-jump-btn" data-center="78,22" data-zoom="4.5" title="Indian Subcontinent">🇮🇳 India</button>
+          <button class="continent-jump-btn" data-center="15,50" data-zoom="4.2" title="European Continent">🏛️ Europe</button>
+          <button class="continent-jump-btn" data-center="20,5" data-zoom="3.8" title="African Continent">🦁 Africa</button>
+          <button class="continent-jump-btn" data-center="105,35" data-zoom="3.8" title="East &amp; Central Asia">🏯 Asia</button>
+          <button class="continent-jump-btn" data-center="-98,40" data-zoom="3.8" title="North America">🗽 N. America</button>
+          <button class="continent-jump-btn" data-center="-60,-15" data-zoom="3.8" title="South America">🏔️ S. America</button>
+          <button class="continent-jump-btn" data-center="135,-25" data-zoom="3.8" title="Australasia">🦘 Oceania</button>
+        </div>
+      </div>
+
+      <!-- Translucent Amber Hover Callout Block -->
+      <div id="room-hover-tag" class="room-hover-tag hidden" role="status" aria-live="polite">
+        <div id="hover-tag-eyebrow" class="hover-tag-eyebrow">CHOLA MARITIME DYNASTY • 1010 CE • UNESCO NO. 250</div>
+        <div id="hover-tag-title" class="hover-tag-title">BRIHADISVARA TEMPLE — MONOLITHIC GRANITE VIMANA</div>
+      </div>
+
+      <!-- Translucent Amber Side-Note Dossier Panel -->
+      <aside id="room-side-note" class="room-side-note hidden" aria-live="polite">
+        <div class="room-side-top">
+          <div id="room-side-eyebrow" class="room-side-eyebrow">MUGHAL EMPIRE • 1632–1653 CE</div>
+          <button id="btn-side-unfocus" class="room-side-close" title="Close &amp; return to wide subcontinent view (Esc)" aria-label="Close">✕</button>
+        </div>
+        <h2 id="room-side-title" class="room-side-title">Taj Mahal (Agra, Uttar Pradesh)</h2>
+
+        <!-- Image Viewer with Left/Right Arrows & ASI Archival Caption -->
+        <div class="room-side-archival-box">
+          <div class="rs-media-frame">
+            <img id="rs-archival-img" src="./renders/archival/taj_mahal.jpg" alt="Archaeological Survey Record" />
+            <button id="btn-media-prev" class="rs-media-arrow rs-arrow-left" type="button" aria-label="Previous image" title="Previous image">‹</button>
+            <button id="btn-media-next" class="rs-media-arrow rs-arrow-right" type="button" aria-label="Next image" title="Next image">›</button>
+            <span id="rs-media-counter" class="rs-media-counter">1 / 2</span>
+          </div>
+          <div id="rs-archival-caption" class="rs-archival-caption">
+            Taj Mahal from reflecting pools • ASI Vintage Albumen Print (1868)
+          </div>
+        </div>
+
+        <!-- Concise Factually Verified Key Points -->
+        <ul id="room-side-keypoints" class="room-side-keypoints">
+          <li>Commissioned in 1632 by Mughal Emperor Shah Jahan as the mausoleum for Empress Mumtaz Mahal; designed by master imperial architect Ustad Ahmad Lahori.</li>
+          <li>Constructed on an elevated riverside terrace along the Yamuna River using translucent white Makrana marble from Rajasthan, founded on deep masonry well foundations.</li>
+          <li>The four 40-meter minarets were engineered with a 3° outward tilt so that in an earthquake, they collapse safely away from the primary dome.</li>
+          <li>Mastery of strict bilateral symmetry and Persian Charbagh quadrilateral garden geometry, integrated with fine lapidary pietra dura inlay.</li>
+        </ul>
+
+        <div class="room-side-nav">
+          <button id="btn-side-prev" class="rs-nav-btn" title="Previous Monument (Left Bracket [)">← Prev</button>
+          <span id="rs-stop-indicator" class="rs-stop-indicator">1 / 12</span>
+          <button id="btn-side-next" class="rs-nav-btn" title="Next Monument (Right Bracket ])">Next →</button>
+        </div>
+      </aside>
+
+      <!-- =================================================================== -->
+      <!-- INTERACTIVE PLANETARY SOLAR & ORBIT CONTROL DOCK                    -->
+      <!-- =================================================================== -->
+      <section id="planetary-dock" class="planetary-dock" aria-label="Solar Day-Night Simulator &amp; World Exploration">
+        <!-- Day / Night Solar Time Dial -->
+        <div class="time-control-card">
+          <div class="time-control-header">
+            <span class="tc-title">☀️ SOLAR TIME SIMULATOR</span>
+            <span id="tc-time-display" class="tc-time-display">14:00 • Daylight</span>
+          </div>
+          <div class="time-slider-wrap">
+            <span class="time-icon">🌙</span>
+            <input type="range" id="solar-time-slider" min="0" max="24" step="0.25" value="14" class="time-range-slider" aria-label="Sunlight time of day" />
+            <span class="time-icon">☀️</span>
+          </div>
+          <div class="time-presets-row">
+            <button type="button" class="time-preset-btn" data-hour="6.5">🌅 Dawn</button>
+            <button type="button" class="time-preset-btn active" data-hour="13.0">☀️ Noon</button>
+            <button type="button" class="time-preset-btn" data-hour="18.5">🌇 Sunset</button>
+            <button type="button" class="time-preset-btn" data-hour="0.0">🌌 Night</button>
+          </div>
+        </div>
+
+        <!-- Interactive Surprise World Flight & Layer Toggles -->
+        <div class="orbit-tools-card">
+          <button id="btn-random-wonder" class="wonder-dice-btn" type="button" title="Fly to a random world wonder!">
+            <span class="dice-emoji">🎲</span>
+            <span class="dice-label">Surprise Flight</span>
+          </button>
+          <button id="btn-toggle-boundaries" class="wonder-dice-btn active" type="button" title="Toggle Country Borders &amp; Cities">
+            <span class="dice-emoji">🗺️</span>
+            <span id="boundaries-toggle-label" class="dice-label">Borders: ON</span>
+          </button>
+        </div>
+      </section>
+
+    <!-- =================================================================== -->
+    <!-- TOP FLOATING BAR: BRAND + UNIVERSAL SEARCH + MODES + TOOLS          -->
+    <!-- =================================================================== -->
+    <header id="top-bar">
+      <div class="brand-block" id="btn-brand-home" title="Return to Space Orbit Earth View">
+        <div class="brand-icon">🌐</div>
+        <div class="brand-text">
+          <span class="brand-title">EARTH 3D</span>
+          <span class="brand-sub">Planet Digital Twin &amp; Heritage Atlas</span>
+        </div>
+      </div>
+
+      <!-- Universal Search Across the Entire World -->
+      <div class="top-search-wrap" title="Search any place on Earth (city, country, monument, or Lat,Lon)">
+        <input id="top-search-input" class="top-search-input" type="text" placeholder="Search any place on Earth (Paris, Taj Mahal, Tokyo, New York, Everest...)" list="india-places-list" />
+        <datalist id="india-places-list"></datalist>
+        <button id="btn-top-search" class="top-search-btn" type="button">Fly To</button>
+      </div>
+
+      <!-- Experience Mode Switcher -->
+      <nav class="mode-switcher" aria-label="Experience Mode">
+        <button id="btn-mode-orbit" class="mode-btn active" data-mode="orbit" title="Orbit overview of the 3D globe">
+          <span>🌐</span> 3D Globe
+        </button>
+        <button id="btn-mode-guided" class="mode-btn" data-mode="guided" title="Guided architectural tour across the world">
+          <span>🧭</span> World Tour
+        </button>
+        <button id="btn-mode-walk" class="mode-btn" data-mode="walk" title="Low-altitude topographical flyover &amp; ground inspection">
+          <span>✈️</span> 3D Flyover
+        </button>
+      </nav>
+
+      <!-- Right Floating Action Buttons -->
+      <div class="header-actions">
+        <!-- Multi-Layer Visual Mode Bar -->
+        <div class="layer-mode-bar" title="Switch 3D Terrain Shading Mode">
+          <button class="layer-btn active" data-layer="satellite" title="True-Color Satellite Photorealism">Satellite</button>
+          <button class="layer-btn" data-layer="lidar" title="0.5m LiDAR Hillshade Relief">LiDAR</button>
+          <button class="layer-btn" data-layer="hypsometric" title="Scientific Hypsometric Elevation Heatmap">Elevation</button>
+          <button class="layer-btn" data-layer="night" title="Night Lights &amp; Stargazing">Night</button>
+        </div>
+
+        <button id="btn-discoveries-drawer" class="action-pill discovery-pill" title="12 Curated Heritage Wonders">
+          🏛️ Monuments <span id="discovery-counter-badge" class="pill-count">1 / 12</span>
+        </button>
+
+        <!-- Solar Lighting & Solstice Popover -->
+        <div class="popover-wrapper">
+          <button id="btn-env-popover" class="action-pill" title="Adjust Sun Lighting, Solstices &amp; Historical Empires">
+            ☀️ <span id="solar-mini-readout">16:30 • Golden Hour</span> ▾
+          </button>
+          <div id="env-popover" class="floating-popover hidden">
+            <div class="popover-section">
+              <div class="pop-header">
+                <span>SOLAR POSITION &amp; LIGHTING</span>
+                <span id="solar-readout" class="mono-badge">16:30 • Alt 24°</span>
+              </div>
+              <div class="slider-row">
+                <label for="time-slider">Sun Time</label>
+                <input id="time-slider" type="range" min="5.5" max="22.0" step="0.05" value="16.5" />
+              </div>
+              <div class="preset-grid">
+                <button class="solar-preset-btn active" data-season="equinox" data-hour="16.5">🌅 Golden Hour Relief</button>
+                <button class="solar-preset-btn" data-season="summer" data-hour="18.2">🔥 Summer Solstice Sunset</button>
+                <button class="solar-preset-btn" data-season="equinox" data-hour="6.8">🌄 Equinox Sunrise (Dawn)</button>
+                <button class="solar-preset-btn" data-season="winter" data-hour="12.0">☀️ Uttarayana Midday</button>
+                <button class="solar-preset-btn" data-season="summer" data-hour="12.5">☀️ Tropic of Cancer Zenith</button>
+                <button class="solar-preset-btn" data-season="night" data-hour="21.5">🌌 Night Stargazing</button>
+              </div>
+            </div>
+
+            <div class="popover-section">
+              <div class="pop-header">
+                <span>HISTORICAL EMPIRES OVERLAY</span>
+              </div>
+              <div class="phase-pills">
+                <button class="phase-btn active" data-phase="all">Modern (2026)</button>
+                <button class="phase-btn" data-phase="stage4">Mughal (1600)</button>
+                <button class="phase-btn" data-phase="stage3">Chola (1050)</button>
+                <button class="phase-btn" data-phase="stage2">Maurya (250 BCE)</button>
+                <button class="phase-btn" data-phase="stage1">Harappa (2500 BCE)</button>
+              </div>
+              <div class="layer-toggles">
+                <label class="toggle-chip"><input type="checkbox" id="chk-show-labels" checked /> 3D Heritage Pins</label>
+                <label class="toggle-chip"><input type="checkbox" id="chk-show-alignments" checked /> Solar Sightlines</label>
+                <label class="toggle-chip"><input type="checkbox" id="chk-show-roofs" checked /> State Boundaries</label>
+                <label class="toggle-chip"><input type="checkbox" id="chk-show-rockfall" checked /> River Arteries</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-open-map" class="action-pill" title="Open 2D Subcontinent Atlas &amp; Location Finder">
+          🗺️ Atlas
+        </button>
+
+        <button id="btn-open-atlas" class="action-pill" title="View Archaeological Archives &amp; Survey Sources">
+          📚 Archive
+        </button>
+
+        <!-- Procedural Web Audio Ambient Soundscape Button -->
+        <button id="btn-audio-toggle" class="action-pill audio-btn" title="Toggle Procedural Tanpura &amp; Bell Soundscape">
+          <span id="audio-icon">🔊</span> Sound
+        </button>
+
+        <button id="btn-toggle-hud" class="action-pill icon-pill" title="Toggle Clean View (Shortcut: H)">
+          👁️
+        </button>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- GEOGRAPHICAL & ARCHITECTURAL SECTION BAR                            -->
+    <!-- =================================================================== -->
+    <nav id="sections-bar" aria-label="Geographical Sections of India">
+      <div class="sections-bar-inner" id="sections-pills-container">
+        <!-- Populated dynamically from PAN_INDIA_SECTIONS -->
+      </div>
+
+      <div class="Camera-quick-tools">
+        <button id="btn-toggle-globe" class="stage-pill-btn active" title="Toggle 3D Sphere Globe vs Flat Map">🌐 3D Globe</button>
+        <button id="btn-pitch-2d" class="stage-pill-btn" title="2D Top-Down View (0° Tilt)">2D</button>
+        <button id="btn-pitch-3d" class="stage-pill-btn active" title="3D Oblique Angle (55° Tilt)">3D</button>
+        <button id="btn-pitch-ground" class="stage-pill-btn" title="3D Ground Horizon View (75° Tilt)">Ground 3D</button>
+        <button id="btn-toggle-autorotate" class="stage-pill-btn" title="Toggle 360° Panoramic Orbit">
+          ↻ 360° Orbit
+        </button>
+        <button id="btn-reset-view" class="stage-pill-btn" title="Reset to Wide Planet Earth View">
+          ↺ Planet Earth
+        </button>
+        <button id="btn-fullscreen-stage" class="stage-pill-btn icon-only" title="Toggle Fullscreen">
+          ⛶
+        </button>
+      </div>
+    </nav>
+
+    <!-- =================================================================== -->
+    <!-- WIDE ORBIT HERO OVERLAY                                             -->
+    <!-- =================================================================== -->
+    <section id="overview-hero-card" class="overview-hero-card" aria-label="Earth 3D Digital Twin Launchpad">
+      <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>GLOBAL 3D DIGITAL TWIN &amp; HERITAGE ATLAS • PLANETARY EARTH (510.1M km²)</span>
+      </div>
+      <h2 id="hero-section-title">Planet Earth 3D Digital Twin</h2>
+      <p id="hero-section-desc">
+        Explore every continent, country, city, and mountain on Earth in authentic <strong>interactive 3D globe and terrain</strong>. Seamlessly zoom from space orbit down to street-level details across <strong>195 countries</strong>, real <strong>8,848m peak relief</strong>, and world-renowned UNESCO World Heritage monuments in crystal-clear pixels.
+      </p>
+      <div class="hero-stats-row">
+        <div class="hero-stat">
+          <span class="stat-val">510.1M</span>
+          <span class="stat-lbl">Earth Area (km²)</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">8,848m</span>
+          <span class="stat-lbl">Peak Relief</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">24+ Wonders</span>
+          <span class="stat-lbl">Curated 3D Heritage</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">195</span>
+          <span class="stat-lbl">Countries Mapped</span>
+        </div>
+      </div>
+      <div class="hero-actions-row">
+        <button id="btn-start-walkthrough" class="hero-primary-btn">
+          <span>🧭</span> Start Guided World Wonders Tour
+        </button>
+        <button id="btn-enter-freewalk" class="hero-secondary-btn">
+          <span>✈️</span> Planetary Flyover
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- RIGHT FLOATING DOSSIER DRAWER                                       -->
+    <!-- =================================================================== -->
+    <button id="btn-reopen-dossier" class="reopen-dossier-btn hidden" title="Show Monument Dossier Panel">
+      ‹ Monument Dossier
+    </button>
+
+    <aside id="inspector-drawer" class="inspector-drawer collapsed-in-overview" aria-label="Monument Discovery Dossier">
+      <div class="inspector-header">
+        <div class="inspector-badges">
+          <span id="info-category-badge" class="cat-badge">WONDER 1 OF 12 • NORTHERN INDIA</span>
+          <span id="info-coords-badge" class="mono-badge">MONUMENT</span>
+        </div>
+        <button id="btn-close-inspector" class="icon-close-btn" title="Collapse Dossier">✕</button>
+      </div>
+
+      <div class="inspector-title-block">
+        <h2 id="info-title">Taj Mahal — Crown of the Palace &amp; Riverside Necropolis</h2>
+        <div id="info-subtitle" class="dossier-phase">Mughal Empire • 1632–1653 CE</div>
+        <div id="info-excavator" class="dossier-excavator">Architect: Ustad Ahmad Lahori • Archaeological Survey of India (UNESCO No. 252)</div>
+      </div>
+
+      <div class="visual-card">
+        <figure class="ref-thumb">
+          <img id="info-photo-img" src="./renders/archival/taj_mahal.jpg" alt="Archaeological Record" />
+          <figcaption id="info-photo-cap">Archaeological Survey of India Archival Record</figcaption>
+        </figure>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div id="lbl-masonry" class="metric-label">MATERIAL &amp; FINISH</div>
+          <div id="info-masonry" class="metric-val">Carved White Makrana Marble</div>
+        </div>
+        <div class="metric-box">
+          <div id="lbl-dendro" class="metric-label">HISTORICAL DATING</div>
+          <div id="info-dendro" class="metric-val">1632–1653 CE</div>
+        </div>
+        <div class="metric-box">
+          <div id="lbl-dimensions" class="metric-label">DIMENSIONS</div>
+          <div id="info-dimensions" class="metric-val">Height: 73m • Plinth: 57m × 57m</div>
+        </div>
+        <div class="metric-box">
+          <div id="lbl-area" class="metric-label">SURVEY RECORD</div>
+          <div id="info-area" class="metric-val">ASI Protected • UNESCO Site 252</div>
+        </div>
+      </div>
+
+      <div class="dossier-scroll-body">
+        <div class="dossier-section">
+          <h3 id="lbl-summary-heading">ARCHAEOLOGICAL RECORD</h3>
+          <p id="info-summary"></p>
+        </div>
+
+        <div class="dossier-section">
+          <h3 id="lbl-artifacts-heading">ENGINEERING &amp; CELESTIAL ALIGNMENT</h3>
+          <p id="info-artifacts" class="artifact-box"></p>
+        </div>
+      </div>
+
+      <div class="inspector-footer">
+        <button id="btn-walk-here" class="primary-action-btn" title="Inspect this monument up close in 3D">
+          🔍 3D Close-up View
+        </button>
+        <button id="btn-focus-selected" class="secondary-btn" title="Orbit camera around this site">
+          🦅 Orbit Site
+        </button>
+        <button id="btn-next-discovery" class="secondary-btn" title="Next wonder in the tour">
+          Next Site →
+        </button>
+      </div>
+    </aside>
+
+    <!-- =================================================================== -->
+    <!-- BOTTOM FLOATING WALKTHROUGH DOCK                                    -->
+    <!-- =================================================================== -->
+    <section id="areas-strip-section" aria-label="Guided Tour &amp; Monument Explorer">
+      <div class="areas-strip-header">
+        <div class="guided-transport-bar">
+          <button id="btn-prev-area" class="transport-btn" title="Previous Site (Left Bracket [)">
+            ← Prev Site
+          </button>
+          <button id="btn-guided-walk" class="transport-btn transport-play-btn" title="Auto-guide through every monument">
+            <span id="guided-walk-icon">▶</span> <span id="guided-walk-label">Auto-Guide Tour</span>
+          </button>
+          <button id="btn-next-area-strip" class="transport-btn" title="Next Site (Right Bracket ])">
+            Next Site →
+          </button>
+          <div class="section-progress-pill">
+            <span id="active-section-badge">SECTION I • SUBCONTINENT OVERVIEW</span>
+          </div>
+        </div>
+
+        <!-- On-Screen Fly Pad -->
+        <div id="onscreen-walk-pad" class="walk-pad" aria-label="On-screen flight controls">
+          <button class="pad-btn" data-move="turnLeft" title="Turn Left">↶</button>
+          <button class="pad-btn" data-move="left" title="Glide Left">◀</button>
+          <button class="pad-btn pad-primary" data-move="forward" title="Fly Forward">▲ Fly</button>
+          <button class="pad-btn" data-move="backward" title="Glide Backward">▼</button>
+          <button class="pad-btn" data-move="right" title="Glide Right">▶</button>
+          <button class="pad-btn" data-move="turnRight" title="Turn Right">↷</button>
+        </div>
+
+        <div id="walk-hint-text" class="stage-hint hidden">
+          <b>WASD / Arrows</b> Fly &amp; Glide • <b>Drag</b> Look 360° • <b>Click Any Monument Pin</b> Inspect
+        </div>
+        <div id="explore-hud" class="stage-hint">
+          <b>Drag</b> 3D Orbit • <b>Right-Drag</b> Pan • <b>Scroll</b> Zoom • <b>Search</b> Any City or State in India
+        </div>
+      </div>
+
+      <!-- Monument Chips Strip across India -->
+      <div id="discovery-chips-grid" class="discovery-chips-grid"></div>
+    </section>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2D SUBCONTINENT ATLAS & LOCATION SEARCH DRAWER                        -->
+  <!-- ===================================================================== -->
+  <section id="map-drawer" class="map-drawer hidden" aria-label="2D Subcontinent Atlas">
+    <div class="map-drawer-header">
+      <div>
+        <span class="map-drawer-title">2D SUBCONTINENT ATLAS &amp; REGIONAL FINDER</span>
+        <span class="map-drawer-sub">Click any monument, state, or city to fly the 3D camera there</span>
+      </div>
+      <button id="btn-close-map" class="icon-close-btn" title="Close Map">✕</button>
+    </div>
+
+    <div class="map-controls-row">
+      <div class="minimap-site-tabs">
+        <button class="mini-tab active" data-site="all">All India (28 States &amp; 8 UTs)</button>
+        <button class="mini-tab" data-site="north">North</button>
+        <button class="mini-tab" data-site="south">South</button>
+        <button class="mini-tab" data-site="west">West</button>
+        <button class="mini-tab" data-site="east">East</button>
+      </div>
+      <div class="search-box">
+        <input id="room-search-input" type="text" placeholder="Search Taj Mahal, Hampi, Mumbai, Ladakh, Kerala…" list="india-places-list" />
+        <button id="btn-room-search">Fly</button>
+      </div>
+    </div>
+
+    <canvas id="minimap-canvas" width="440" height="230"></canvas>
+
+    <div class="minimap-legend">
+      <span><i class="leg-box leg-old"></i>Himalayan Range</span>
+      <span><i class="leg-box leg-4s"></i>Indo-Gangetic Basin</span>
+      <span><i class="leg-box leg-wing"></i>Deccan Plateau</span>
+      <span><i class="leg-box leg-kiva"></i>Ghats &amp; Coast</span>
+      <span><i class="leg-box leg-disc"></i>3D Monument</span>
+      <span><i class="leg-box leg-you"></i>Camera</span>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: ARCHAEOLOGICAL SURVEY OF INDIA & GEODETIC ATLAS                -->
+  <!-- ===================================================================== -->
+  <div id="atlas-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="atlas-modal-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h2 id="atlas-modal-title">INDIA 3D DIGITAL TWIN • ARCHAEOASTRONOMY &amp; SURVEY ARCHIVE</h2>
+          <p>Grounded in Archaeological Survey of India (ASI) monographs, Survey of India geodetic datums, and UNESCO World Heritage documentation</p>
+        </div>
+        <button id="btn-close-atlas" class="close-modal-btn" aria-label="Close Atlas">✕</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="atlas-tab-btn active" data-tab="tab-renders">1. Monument Survey Records &amp; 3D Models</button>
+        <button class="atlas-tab-btn" data-tab="tab-sundagger">2. Ancient Archaeoastronomy &amp; Sundials</button>
+        <button class="atlas-tab-btn" data-tab="tab-masonry">3. Classical Architectural Typologies</button>
+        <button class="atlas-tab-btn" data-tab="tab-sources">4. Primary Data Archives (ASI, SOI, UNESCO)</button>
+      </div>
+
+      <!-- Tab 1: Monument Surveys -->
+      <div id="tab-renders" class="atlas-tab-content active">
+        <div class="comparison-grid">
+          <div class="comp-card">
+            <h4>Taj Mahal: Makrana White Marble Plinth &amp; Yamuna River Terrace</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/taj_mahal.jpg" alt="Taj Mahal 1868 ASI Photo" />
+                <span>ASI Vintage Albumen Print (1868): Symmetrical Charbagh Water Axis</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-card">
+            <h4>Brihadisvara: 66m Monolithic Granite Vimana Tower (1010 CE)</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/brihadisvara.jpg" alt="Brihadisvara ASI Record" />
+                <span>ASI Architectural Plate (1885): 80-tonne Monolithic Apex Cupola</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-card">
+            <h4>Hampi Vijayanagara: Stone Chariot &amp; Virupaksha Temple Complex</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/hampi.jpg" alt="Hampi Stone Chariot ASI Photo" />
+                <span>ASI Album (1888, C. Murray): Garuda Shrine &amp; Granite Boulder Hills</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-card">
+            <h4>Konark Sun Temple: 24-Wheeled Celestial Sundial Chariot</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/konark.jpg" alt="Konark Sun Temple Wheel" />
+                <span>ASI Odisha Photo (13th Century): Stone Sundial Spokes Indicating Minutes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-card">
+            <h4>Qutb Minar: 72.5m Fluted Red Sandstone Minaret &amp; Iron Pillar</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/qutb_minar.jpg" alt="Qutb Minar ASI Plate" />
+                <span>ASI Delhi Survey (1885): Five Tapering Balconied Storeys</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-card">
+            <h4>Ajanta Caves: Cave 19 Chaitya Hall Basalt Horseshoe Facade</h4>
+            <div class="comp-images">
+              <div>
+                <img src="./renders/archival/ajanta.jpg" alt="Ajanta Cave 19 ASI Photo" />
+                <span>ASI Plate (1882): Subtractive Rock Excavation into Deccan Basalt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Archaeoastronomy -->
+      <div id="tab-sundagger" class="atlas-tab-content">
+        <div class="sundagger-grid">
+          <div class="sundagger-info">
+            <h3>ANCIENT SOLAR OBSERVATORIES &amp; SOLSTICE ALIGNMENTS</h3>
+            <p>
+              Ancient Indian master builders (Sthapathis) and astronomers (such as Aryabhata, Varahamihira, and Bhaskara) synchronized monumental architecture with celestial mechanics:
+            </p>
+            <ul class="sd-bullets">
+              <li><strong>Konark Sun Temple (Odisha):</strong> The 24 stone chariot wheels have 8 major spokes (dividing day into eight 3-hour Praharas) and 8 minor spokes. The shadow cast by the central hub axle marks the exact time of day to within 60 seconds.</li>
+              <li><strong>Jantar Mantar (Jaipur &amp; Delhi):</strong> Sawai Jai Singh II built the monumental Vrihat Samrat Yantra (27m high gnomon angled at 26°55'—the latitude of Jaipur) projecting a shadow that moves at 1mm per second.</li>
+              <li><strong>Modhera Sun Temple (Gujarat):</strong> Situated directly near the Tropic of Cancer, built so that at the Vernal &amp; Autumnal Equinoxes, the first ray of the rising sun penetrates through the pillared halls to strike the golden idol.</li>
+              <li><strong>Uttarayana &amp; Dakshinayana:</strong> The bi-annual northward and southward migration of the Sun, celebrated at Makar Sankranti and Karka Sankranti, fundamentally guided the orientation of temple gateways and river ghats.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Architectural Typologies -->
+      <div id="tab-masonry" class="atlas-tab-content">
+        <div class="masonry-grid">
+          <div class="masonry-card">
+            <div class="m-header"><span class="m-badge">DRAVIDIAN</span> <strong>South Indian Granite Vimana &amp; Gopuram</strong></div>
+            <p>Characterized by tiered pyramidal vimana towers, colossal perimeter Rajagopuram entrance gateways covered in sculpted statuary, pillared mandapas with musical columns, and sacred temple tanks (e.g. Brihadisvara, Meenakshi Amman, Hampi).</p>
+          </div>
+          <div class="masonry-card">
+            <div class="m-header"><span class="m-badge">NAGARA</span> <strong>North Indian Mountain-Peak Shikhara</strong></div>
+            <p>Soaring curvilinear spires (Shikharas) crowned by an Amalaka disk and Kalasha finial, with fractal clusters of miniature spires (Urushringas) evoking the sacred peaks of Mount Meru and Kailash (e.g. Khajuraho Kandariya Mahadeva, Modhera, Konark).</p>
+          </div>
+          <div class="masonry-card">
+            <div class="m-header"><span class="m-badge">INDO-ISLAMIC</span> <strong>Mughal &amp; Sultanate Domes &amp; Minarets</strong></div>
+            <p>Mastery of pointed true arches, bulbous onion domes, soaring fluted minarets, red sandstone paired with white Makrana marble, jali lattice screens, and Persian Charbagh geometric gardens (e.g. Taj Mahal, Qutb Minar, Red Fort).</p>
+          </div>
+          <div class="masonry-card">
+            <div class="m-header"><span class="m-badge">BUDDHIST &amp; ROCK-CUT</span> <strong>Stupas &amp; Basalt Chaitya Caves</strong></div>
+            <p>Hemispherical cosmic reliquary domes with harmika railings and triple umbrella chhatras (Sanchi Stupa), and subtractive rock-cut chaitya assembly halls and vihara monasteries carved directly into Deccan volcanic basalt cliffs (Ajanta, Ellora Kailasa).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Sources -->
+      <div id="tab-sources" class="atlas-tab-content">
+        <div class="sources-list" id="sources-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

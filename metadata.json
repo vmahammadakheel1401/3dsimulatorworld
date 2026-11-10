@@ -1,0 +1,8 @@
+{
+  "name": "India 3D Digital Twin & Heritage Explorer",
+  "description": "Interactive 3D geospatial digital twin and heritage atlas of India. Explore 3D topographic terrain from the Himalayas to Kanyakumari, UNESCO monuments, archaeoastronomical solar alignments, LiDAR hillshades, and historical eras across all Indian regions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
